@@ -1,6 +1,6 @@
 module.exports = {
     
-    search_param:        '#NotMyPresident',
+    search_param:        'love',
     language_param:      'en'
 
 }
