@@ -1,0 +1,27 @@
+<!--This is the application's client part. The tweets' text is received via socket.io and printed to the browser-->
+
+<!doctype html>
+<html>
+  <head>
+    <title>commander-in-tweet</title>
+  </head>
+
+    <body>
+
+        <!--load the socket.io-client-->
+
+        <script src="/socket.io/socket.io.js"></script>
+        
+        <script>
+
+          var socket = io();   //no need to specifying any URL here since it defaults to trying to connect to the host that serves the page.
+          //socket.connect('http://localhost:8080');  //but i could specify it here
+            socket.on('stream', function(tweet){ 
+              document.write(tweet);                  //write all tweets to the browser
+            });
+
+        </script>
+      
+
+    </body>
+</html>

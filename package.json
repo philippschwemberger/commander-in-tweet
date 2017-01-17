@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "socket.io": "*",
     "express": "*",
     "twit": "^2.2.5"
   }
