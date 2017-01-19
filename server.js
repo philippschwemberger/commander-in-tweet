@@ -24,7 +24,7 @@ var T = new Twit(keys);
 var path = require('path');
 app.use(express.static(path.join(__dirname, 'linkedScripts')));   //js file has to be in dir: 'linkedScripts'
 /*if I don't want to have my .js file in another dir I could use this, 
-//app.use(express.static('../commander-in-tweet')); //up one directory and then the dir the file is in -> main directory
+//app.use(express.static('../commander-in-tweet')); //move up one directory and then the dir the file is in -> main directory
 but then the dir of all files had to be called 'commander-in-tweet' on each users computer*/
 
  //define a route handler '/'  - the route handler get's hit when the website home is hit

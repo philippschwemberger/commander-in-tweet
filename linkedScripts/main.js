@@ -1,45 +1,44 @@
-//PIXI   
-
-/*//Aliases
-var Container = PIXI.Container();*/
+//this is the js which is doing all the pixi-work
 
 
-var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {backgroundColor: 0x1099bb});
 document.body.appendChild(renderer.view);
 
 var stage = new PIXI.Container();
+
+
+//start gameLoop()  - gets called every 60 seconds
+gameLoop();
+console.log('loop started');
+
 
 
 var count = 0;  //don't know why the event is triggered twice
 
 var socket = io();   //io() creates an instance of socket.io that can listen to the customEvent 'stream', made in server.js
 //socket.connect('http://localhost:8080');  //no need to specifying any URL here since it defaults to trying to connect to the host that serves the page.
+
+//triggered everytime a 'stream' event == a tweet comes in
 socket.on('stream', function(tweet){  
     
-    var tweetText = tweet.text;
-    var tweetUser = tweet.user.name;
 
     count += 1; 
-
-    //if there are more than 5 tweets delete the first one
-    if(stage.children.length > 5){
-        stage.removeChild(stage.children[0]);
-    }
-        
+ 
     if(count %2 == 0){  //make sure text is only printed once
-        //console.log('event happened' + tweet.text);
 
+        //1 obj represents: text, user, rectangle
         var obj = new PIXI.Container();
 
         var rectWidth = 500;
         var rectHeight = 100;
 
+        //create random positions for tweet obj
         var pos = [getRandomInt(0, window.innerWidth - rectWidth), getRandomInt(0, window.innerHeight - rectHeight)];
 
         var rectangle = new PIXI.Graphics();
-            //rectangle.lineStyle(4, 0xFF3300, 1);
+            rectangle.lineStyle(1, 0xFFFFFF, 1);
             rectangle.beginFill(0x66CCFF);
-            rectangle.drawRect(0, 0, rectWidth, rectHeight);
+            rectangle.drawRoundedRect(0, 0, rectWidth, rectHeight, 8);
             rectangle.endFill();
             rectangle.position.set(pos[0], pos[1]);
         
@@ -47,44 +46,64 @@ socket.on('stream', function(tweet){
         
         //text processing
         var fontSzUser = 16;
-        var fontSztweet = 14;
+        var fontSzTweet = 14;
+        var fontSzTime = 12;
         var xOff = 10;
         var yOff = 10;
-        var yOfftweet = 3*fontSztweet;
-        var chunks = [];  //divide tweet in two lines
+        var yOfftweet = 3.5*fontSzTweet;
+      
+        var tweetUser = tweet.user.name;
+        var createdAt;
+        var tweetText = tweet.text;
 
-        for (var i = 0; i < tweetText.length; i += 70) {
-            chunks.push(tweetText.substring(i, i + 70));
-        } 
-    
-        /*console.log('chunk one ' + chunks[0]);
-        console.log('chunk two ' + chunks[1]);*/
+        createdAt = 'created at: ' + tweet.created_at.substring(11,19)+' GMT';
 
-        
 
         var username = new PIXI.Text(tweetUser, {fontFamily: "Arial", fontSize: fontSzUser, fill: 'white'});
         username.position.set(pos[0] + xOff, pos[1] + yOff);
 
-        var tweetp1 = new PIXI.Text(chunks[0], {fontFamily: "Arial", fontSize: fontSztweet, fill: 'white'}); //fill: '#55ACEE' 
-        tweetp1.position.set(pos[0] + xOff, pos[1] + yOfftweet);
+        var time = new PIXI.Text(createdAt, {fontFamily: "Arial", fontSize: fontSzTime, fill: 'white'});
+        time.position.set(pos[0] + xOff, pos[1] + yOff + fontSzUser*1.15);
 
-        var tweetp2 = new PIXI.Text(chunks[1], {fontFamily: "Arial", fontSize: fontSztweet, fill: 'white'}); //fill: '#55ACEE' 
-        tweetp2.position.set(pos[0] + xOff, pos[1] + yOfftweet + fontSztweet*1.2);
+        var message = new PIXI.Text(tweetText, {fontFamily: "Arial", fontSize: fontSzTweet, fill: 'white', wordWrap: true, wordWrapWidth: (rectWidth-xOff*2)}); //fill: '#55ACEE' 
+        message.position.set(pos[0] + xOff, pos[1] + yOfftweet);
+     
 
         obj.addChild(rectangle);
         obj.addChild(username);
-        obj.addChild(tweetp1);
-        obj.addChild(tweetp2)
+        obj.addChild(time);
+        obj.addChild(message);
+
+        //make sprites interactive
+        obj.interactive = true;
+        obj.on('mousedown', onMouseDown);
+       
+        function onMouseDown(){
+            //remove obj when clicked on it
+            stage.removeChild(this);
+            console.log('object removed');
+        }
         
         stage.addChild(obj);
-        renderer.render(stage);   //here the pixi magic happens
+        console.log('objects in stage: ' + stage.children.length);
 
-        console.log(stage.children.length);
-    }
+        
+        //if there are more than 5 tweets delete the first one
+        if(stage.children.length > 3){
+            stage.removeChild(stage.children[0]);
+        }
 
 
-});
+    }  //end of if-loop (coping with doubled event)
 
+}); //end of event 'stream'
+
+
+function gameLoop(){
+    requestAnimationFrame(gameLoop);
+
+    renderer.render(stage);
+}
 
 
 function getRandomInt(min, max) {
