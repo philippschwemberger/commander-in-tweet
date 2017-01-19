@@ -1,6 +1,6 @@
 /*
+This is the application's server part
 Setting up a HTTP server and establishing a connection to twitter's' streaming API.
-The tweets with a certain # (which is defined in config.js) are sent to the browser in a simple way.
 */
 
 //setting up a server
@@ -23,7 +23,7 @@ var T = new Twit(keys);
 
  //define a route handler '/'  - the route handler get's hit when the website home is hit
 app.get('/', function(req, res){    //GET request on homepage
-  res.sendFile(__dirname + '/index.html'); 
+  res.sendFile(__dirname + '/index.html');  //serves the index file to the browser
 });
 
 
@@ -32,9 +32,11 @@ io.sockets.on('connection', function (socket) {
   console.log('Connected');
 
   var stream = T.stream('statuses/filter', { track: searchFor, lang: language});
+          //T.stream connects with twitter API, keeps the connection alive & returns an event Emitter, 
+          //which emits an event for tweets with our params - the event we are listening to is defined in stream.on('tweet', ...) could also be 'delete', etc.
 
-  stream.on('tweet', function (tweet) {
-    io.sockets.emit('stream',tweet.text);  //sendet den tweet mit allen daten (username, ...)
+  stream.on('tweet', function (tweet) {   //tweet in cb-function rep the data {} - coming from the open stream and the filter parmas
+    io.sockets.emit('stream',tweet);     //emits data to the client part, 'stream' is the customEventsName, tweet is the data to be sent
   });
 
 

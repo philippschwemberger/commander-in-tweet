@@ -1,4 +1,5 @@
-<!--This is the application's client part. The tweets' text is received via socket.io and printed to the browser-->
+<!--This is the application's client part. The tweets' text is received via socket.io and printed to the browser, 
+now using pixi.js. The tweet's text gets randomly spread over the browser window-->
 
 <!doctype html>
 <html>
@@ -6,22 +7,55 @@
     <title>commander-in-tweet</title>
   </head>
 
-    <body>
+  <body>
 
-        <!--load the socket.io-client-->
 
         <script src="/socket.io/socket.io.js"></script>
-        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.3.3/pixi.min.js"></script>  
+
         <script>
 
-          var socket = io();   //no need to specifying any URL here since it defaults to trying to connect to the host that serves the page.
-          //socket.connect('http://localhost:8080');  //but i could specify it here
-            socket.on('stream', function(tweet){ 
-              document.write(tweet);                  //write all tweets to the browser
-            });
+        //PIXI   
+        var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.view);
+
+        var stage = new PIXI.Container();
+
+
+
+        var count = 0;  //don't know why the event is triggered twice
+
+        var socket = io();   //io() creates an instance of socket.io that can listen to the customEvent 'stream', made in server.js
+        //socket.connect('http://localhost:8080');  //no need to specifying any URL here since it defaults to trying to connect to the host that serves the page.
+        socket.on('stream', function(tweet){  
+
+            count += 1; 
+              
+            if(count %2 == 0){  //make sure text is only printed once
+              console.log('event happened' + tweet.text);
+
+              var message = new PIXI.Text(tweet.text, {fontFamily: "Arial", fontSize: 20, fill: "white"});
+              
+
+              message.position.set(getRandomInt(0, window.innerWidth), getRandomInt(0, window.innerHeight));
+              stage.addChild(message);
+              renderer.render(stage);   //here the pixi magic happens
+            }
+
+
+        });
+
+
+
+        function getRandomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
 
         </script>
+
+         
       
 
-    </body>
+  </body>
 </html>
