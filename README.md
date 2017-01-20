@@ -1,11 +1,13 @@
 # commander-in-tweet
 browser game built with node.js and pixi.js using the twitter API
 
-requirements: node.js installed 
+requirements: node.js installed   
+
 if you haven't already, download it here: https://nodejs.org/en/download/
 
 
-current project status:
+current project status:  
+
 writing tweets to the browser window
 
 1.) clone or download the repository
