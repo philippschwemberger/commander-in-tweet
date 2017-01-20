@@ -1,6 +1,6 @@
 module.exports = {
     
-    search_param:        'Bernie Sanders',
+    search_param:        '#NotMyPresident',
     language_param:      'en'
 
 }
