@@ -8,6 +8,10 @@ var stage = new PIXI.Container();
 var allObj = new PIXI.Container();  //container for the diff parts of one tweet
 var trump;
 
+var score = 0;
+var maxTweets = 8;
+
+
 
 
 //load & place trump
@@ -30,9 +34,7 @@ function loadFinished(){
     exp3 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/XyGIMu1.png'].texture);
 }
 
-//start gameLoop()  - gets called every 60 seconds
-gameLoop();
-console.log('loop started');
+
 
 
 
@@ -47,7 +49,7 @@ socket.on('stream', function(tweet){
 
     count += 1; 
  
-    if(count %2 == 0){  //make sure text is only printed once
+    if(count %2 == 0 && frameCount > 100){  //make sure text is only printed once
 
         //1 obj represents: text, user, rectangle
         var obj = new PIXI.Container();
@@ -55,8 +57,18 @@ socket.on('stream', function(tweet){
         var rectWidth = 500;
         var rectHeight = 115;
 
+        //var takenPos = [];
+
         //create random positions for tweet obj
         var pos = [getRandomInt(0, window.innerWidth - rectWidth), getRandomInt(0, window.innerHeight - rectHeight - trump.height)];
+        
+       
+        /*if(takenPos.length > maxTweets){
+            takenPos.splice(takenPos[0], 1);
+        }
+        takenPos.push(pos);
+        console.log(takenPos[0]);*/
+        
 
         var rectangle = new PIXI.Graphics();
             rectangle.lineStyle(1, 0x000000, 0.5);
@@ -112,6 +124,14 @@ socket.on('stream', function(tweet){
             allObj.removeChild(this);
             console.log('object removed');
             explode(x, y);  //call explosion function and place it at the last click on an interactive sprite
+            score++;
+            scoreText.text = 'Your score is:\n' + score + ' points'
+
+            //check for ever n display an award message
+            if(score %5 == 0){
+                displayAward(awardCount);
+                awardCount++;
+            }
         }
         
         allObj.addChild(obj);
@@ -120,7 +140,7 @@ socket.on('stream', function(tweet){
 
         
         //if there are more than 5 tweets delete the first one
-        if(allObj.children.length > 6){
+        if(allObj.children.length > maxTweets){
             allObj.removeChild(allObj.children[0]);
         }
 
@@ -166,6 +186,7 @@ function explode(x, y){
 }
 
 
+
 //variable Text on screen
 var style = {
     fontFamily : 'Arial',
@@ -182,29 +203,76 @@ var style = {
     wordWrap : true,
     wordWrapWidth : 1000
 };
-        
+
+//initial text        
 var gameText = new PIXI.Text('Play the most overrated game on the web!', style);
         gameText.anchor.set(0.5, 0.5);
-        gameText.position.set(window.innerWidth/2, window.innerHeight/2-100);
+        gameText.position.set(window.innerWidth/2, window.innerHeight/2-250);
 
 var hashtag = new PIXI.Text('#NotMyPresident', {fontFamily: "Arial", fontSize: 48, fontStyle : 'italic', fontWeight : 'bold',fill: '#FF0000'});
         hashtag.anchor.set(0.5, 0.5);
-        hashtag.position.set(window.innerWidth/2, window.innerHeight/2);
+        hashtag.position.set(window.innerWidth/2, window.innerHeight/2-150);
+
+var instructions = new PIXI.Text('Click on the incoming tweets to gain points!', {fontFamily: "Arial", fontSize: 36, fontWeight : 'bold',fill: '#F7EDCA', stroke : '#4a1850', strokeThickness : 2, dropShadow : true,
+            dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6});
+        instructions.anchor.set(0.5, 0.5);
+        instructions.position.set(window.innerWidth/2, window.innerHeight/2);
 
     stage.addChild(gameText);
     stage.addChild(hashtag);
+    stage.addChild(instructions);
 
+//score:
+var scoremsg = 'Your score is:\n' + score + ' points';
+var scoreText = new PIXI.Text(scoremsg, {fontFamily: "Arial", fontSize: 30, fontStyle : 'italic', fontWeight : 'bold', fill: '#FF0000', 
+    stroke : '#4a1850',strokeThickness : 3,dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6});
+        //scoreText.anchor.set(0.5, 0.5);
+        scoreText.position.set(150, window.innerHeight-150);
+    
+    stage.addChild(scoreText);
+
+//award words 7items
+var awards = ["You have such great potential. But you are just sitting around and having a good time. So sad!", "you're highly overrated!",
+  "Hmmm, not so bad. You want to be in my cabinet?", "Bigly!!!", "Amazing!", "Tremendous!"]
+
+var awardText = new PIXI.Text('', {fontFamily: "Arial", fontSize: 30, fontStyle : 'italic', fontWeight : 'bold', fill: '#FF0000', 
+    stroke : '#4a1850',strokeThickness : 3,dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6,
+    wordWrap : true, wordWrapWidth : 500});
+        //scoreText.anchor.set(0.5, 0.5);
+        awardText.position.set(window.innerWidth/2+170, window.innerHeight-200);        //trump.x +trump.width, trump.y -trump.height); -> i think trump is at this point undefined
+        awardText.rotation = 6.13;
+
+    stage.addChild(awardText);
+
+//counts for gameLoop
 var frameCount = 0;
+var awardCount = 0;
 
+//start gameLoop()  - gets called every 60 seconds
+gameLoop();
+console.log('loop started');
+
+//looping function
 function gameLoop(){
     requestAnimationFrame(gameLoop);
 
     if(frameCount>500){
         gameText.visible = false;
         hashtag.visible = false;
+        instructions.visible = false;
     }
     frameCount++;
 
+    
 
     renderer.render(stage);
 }
+
+//gets called in mouseDown 
+function displayAward(i){
+    awardText.text = awards[i];
+   setTimeout(function(){
+        awardText.text = '';
+    }, 5000);
+}
+
