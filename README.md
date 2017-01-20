@@ -1,18 +1,22 @@
-# commander-in-tweet
+# commander-in-tweet (Beta release)
 browser game built with node.js and pixi.js using the twitter API
 
 requirements: node.js installed   
 
-if you haven't already, download it here: https://nodejs.org/en/download/
+if you haven't already, download it here: https://nodejs.org/en/download/  
+  
+  
+How to install:  
+  
+1.) clone or download the repository  
+  
+2.) unzip and navigate to the downloaded folder (make sure you are in the folder with README.md in it) via the terminal or your favorite cmd-line: $ cd 'pathOfFolder'  or  > cd 'pathOfFolder'  
+  
+3.) $ npm install  (this installs the packages in the "dependencies" of package.json)  
+  
+4.) $ node server.js -> this will start the server program.  
+  
+5.) go to your browser and type in http://localhost:8080  
+  
+CONGRATULATIONS! Now you are the commander-in-tweet.
 
-
-current project status:  
-
-writing tweets to the browser window
-
-1.) clone or download the repository
-2.) $ cd to this folder
-3.) $ npm install  (this installs the packages in the "dependencies" of package.json)
-
-4a.) $ node getTwitterFeed.js  -> this will log all incoming tweets to your console
-4b.) $ node server.js -> this will log all incoming tweets to your brwoser window (http://localhost:8080)
