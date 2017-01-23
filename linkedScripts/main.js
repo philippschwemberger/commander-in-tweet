@@ -6,10 +6,12 @@ document.body.appendChild(renderer.view);
 
 var stage = new PIXI.Container();
 var allObj = new PIXI.Container();  //container for the diff parts of one tweet
+
 var trump;
 
 var score = 0;
-var maxTweets = 8;
+var timeBeforeStart = 50;
+var maxTweets = 3;  //if there is no more space after 3 to 4 tweets they will overlap -- safetyBreak prevents the while loop from running more than n-times
 
 
 
@@ -17,7 +19,7 @@ var maxTweets = 8;
 //load & place trump
 //load explosions
 PIXI.loader.add([   //only one loader function allowed
-    'http://i.imgur.com/MbjpZIK.png', 'http://i.imgur.com/iaJheYx.png', 'http://i.imgur.com/zYWTVSo.png', 'http://i.imgur.com/XyGIMu1.png', 
+    'http://i.imgur.com/MbjpZIK.png', 'http://i.imgur.com/6msh6C3.png', 'http://i.imgur.com/iaJheYx.png', 'http://i.imgur.com/zYWTVSo.png', 'http://i.imgur.com/XyGIMu1.png', 
 ]).load(loadFinished); 
 //this loads the image as webgl ready texture to >>PIXI.utils.TextureCache[nameOfFile]<<
 
@@ -29,9 +31,12 @@ function loadFinished(){
     trump.position.set(window.innerWidth/2, window.innerHeight);
     stage.addChild(trump);
 
+    //the sprite is created when needed
+    /*tweetTexture = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/6msh6C3.png'].texture);
+
     exp1 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/iaJheYx.png'].texture);
     exp2 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/zYWTVSo.png'].texture);
-    exp3 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/XyGIMu1.png'].texture);
+    exp3 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/XyGIMu1.png'].texture);*/
 }
 
 
@@ -49,43 +54,68 @@ socket.on('stream', function(tweet){
 
     count += 1; 
  
-    if(count %2 == 0 && frameCount > 100){  //make sure text is only printed once
+    if(count %2 == 0 && frameCount > timeBeforeStart && allObj.children.length < maxTweets){  //make sure text is only printed once
 
-        //1 obj represents: text, user, rectangle
+        //1 obj represents: text, user, tweetTexture
         var obj = new PIXI.Container();
 
-        var rectWidth = 500;
-        var rectHeight = 115;
+        var rectWidth = 500;    //measurements of tweetTexture
+        var rectHeight = 197; //measurements of tweetTexture former 115;
 
-        //var takenPos = [];
+     
 
         //create random positions for tweet obj
-        var pos = [getRandomInt(0, window.innerWidth - rectWidth), getRandomInt(0, window.innerHeight - rectHeight - trump.height)];
+        var pos;
         
+        calcPos();
        
-        /*if(takenPos.length > maxTweets){
-            takenPos.splice(takenPos[0], 1);
-        }
-        takenPos.push(pos);
-        console.log(takenPos[0]);*/
         
+        function calcPos(){
+            //first try
+            pos = [getRandomInt(0, window.innerWidth - rectWidth), getRandomInt(0, window.innerHeight - rectHeight - trump.height)];
 
-        var rectangle = new PIXI.Graphics();
-            rectangle.lineStyle(1, 0x000000, 0.5);
-            rectangle.beginFill(0xFFFFFF);
-            rectangle.drawRect(0, 0, rectWidth, rectHeight);
-            rectangle.endFill();
-            rectangle.position.set(pos[0], pos[1]);
-        
-    
+            var safetyBreak = 0;
+            while(checkOverlap()){    //if it overlaps create a new pos     
+                pos = [getRandomInt(0, window.innerWidth - rectWidth), getRandomInt(0, window.innerHeight - rectHeight - trump.height)];
+                console.log('retry');
+                safetyBreak++;
+                if(safetyBreak > 20){
+                    break;
+                }
+            }
+        }
+      
+
+        function checkOverlap(){  //loop through all exiting objs
+         var result = false;
+
+            for(var i = 0; i<allObj.children.length; i++){
+
+                //get obj(i) and then get the first one of it's children (=tweetTexture)
+                var x1 = allObj.getChildAt(i).getChildAt(0).getGlobalPosition().x;
+                var y1 = allObj.getChildAt(i).getChildAt(0).getGlobalPosition().y;
+
+                if(pos[0] >= (x1 -rectWidth) && pos[1] >= (y1-rectHeight) && pos[0] <= (x1 + rectWidth) && pos[1] <= (y1 + rectHeight)){
+                    result = true;
+                    console.log('overlapping!!!!')
+                }
+            }
+         
+         return result;
+        }
+
+        //create tweet background with untaken position
+        var tweetTexture = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/6msh6C3.png'].texture);
+            tweetTexture.position.set(pos[0], pos[1]);
+            
         
         //TWEET text processing
         var fontSzUser = 16;
         var fontSzTweet = 14;
-        var fontSzTime = 12;
-        var xOff = 10;
-        var yOff = 10;
-        var yOfftweet = 3.5*fontSzTweet;
+        var fontSzTime = 14;
+        var xOff = 23;
+        var yOff = 23;
+        var yOfftweet = 4*fontSzTweet;
       
         var tweetUser = tweet.user.name;
         var createdAt;
@@ -94,24 +124,27 @@ socket.on('stream', function(tweet){
         createdAt = 'created at: ' + tweet.created_at.substring(11,19)+' GMT';
 
 
-        var username = new PIXI.Text(tweetUser, {fontFamily: "Arial", fontSize: fontSzUser, fill: '#000000'});
+        var username = new PIXI.Text(tweetUser, {fontFamily: "Arial", fontSize: fontSzUser, fontWeight : 'bold', fill: '#000000'});
         username.resolution = 2;    //don't know it that really helps
         username.position.set(pos[0] + xOff, pos[1] + yOff);
 
         var time = new PIXI.Text(createdAt, {fontFamily: "Arial", fontSize: fontSzTime, fill: '#000000'});
         time.resolution = 2;
-        time.position.set(pos[0] + xOff, pos[1] + yOff + fontSzUser*1.15);
+        time.position.set(pos[0] + xOff, pos[1] + yOff + fontSzUser*1.45);
 
         var message = new PIXI.Text(tweetText, {fontFamily: "Arial", fontSize: fontSzTweet, fill: '#000000', wordWrap: true, wordWrapWidth: (rectWidth-xOff*2)}); //fill: '#55ACEE' 
-        message.position.set(pos[0] + xOff, pos[1] + yOfftweet);
+        message.position.set(pos[0] + xOff, pos[1] + yOff + yOfftweet);
      
 
-    
-
-        obj.addChild(rectangle);
+  
+        obj.addChild(tweetTexture);
         obj.addChild(username);
         obj.addChild(time);
         obj.addChild(message);
+
+        //console.log(obj.toGlobal(0,0));   doesn't work with containers, only with sprites
+    /*     console.log('X coord. of tweetTexture from obj: ' + obj.getChildAt(0).getGlobalPosition().x);  //I can't access via: obj.tweetTexture.getGlo...
+         console.log('Y coord. of tweetTexture from obj: ' + obj.getChildAt(0).getGlobalPosition().y);*/
 
         //make sprites interactive
         obj.interactive = true;
@@ -135,6 +168,7 @@ socket.on('stream', function(tweet){
         }
         
         allObj.addChild(obj);
+        
         stage.addChild(allObj);
         console.log('objects in stage: ' + allObj.children.length);
 
@@ -144,6 +178,8 @@ socket.on('stream', function(tweet){
             allObj.removeChild(allObj.children[0]);
         }
 
+        
+        
 
     }  //end of if-loop (coping with doubled event)
 
@@ -166,7 +202,8 @@ function explode(x, y){
     exp3 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/XyGIMu1.png'].texture);
      exp3.anchor.set(0.5, 0.7);
      exp3.position.set(x, y);
-     console.log(x, + 'y: ' + y);
+     console.log('coord. of explosion: ' + exp3.getGlobalPosition());   //works with sprite
+     
 
      var time = 400;
 
