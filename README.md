@@ -10,7 +10,7 @@ How to install:
   
 1.) clone or download the repository  
   
-2.) unzip and navigate to the downloaded folder (make sure you are in the folder with README.md in it) via the terminal or your favorite cmd-line: $ cd 'pathOfFolder'  or  > cd 'pathOfFolder'  
+2.) unzip and navigate to the downloaded folder (make sure you are in the folder with README.md in it) via the terminal or your favorite CLI: $ cd 'pathOfFolder'  or  > cd 'pathOfFolder'  
   
 3.) $ npm install  (this installs the packages in the "dependencies" of package.json)  
   

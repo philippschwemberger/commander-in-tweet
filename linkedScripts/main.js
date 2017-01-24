@@ -1,35 +1,91 @@
 //this is the js which is doing all the pixi-work and receiving the tweet-data via socket.io
 
+var sound = new Howl({
+            src: ['/meetAgain.mp3']
+          });
 
-var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {backgroundColor: 0x1099bb, resolution: 1});
+sound.once('load', function(){
+    console.log('sound loaded')
+    setTimeout(function(){
+            sound.play();
+        }, 10600);    //msec vs framecount!!!
+       
+});
+
+
+
+var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {backgroundColor: 0x00ACED, resolution: 1, antialias: true});
 document.body.appendChild(renderer.view);
 
 var stage = new PIXI.Container();
 var allObj = new PIXI.Container();  //container for the diff parts of one tweet
+var background = new PIXI.Container();  //if background pics and instructions text are not in different containers they disply in wrong order
+var instructions = new PIXI.Container();
 
 var trump;
+var eagle;
+var commanderTxt;
+var majorKong;
 
 var score = 0;
-var timeBeforeStart = 50;
+var timeBeforeStart = 200;
+var timeForStartScreen = 500;
+
+var timerScreen1 = 150;
+var timerScreen2 = 700; //700
+
 var maxTweets = 3;  //if there is no more space after 3 to 4 tweets they will overlap -- safetyBreak prevents the while loop from running more than n-times
 
+var fontInstr = 'Press Start 2P';
 
-
+//bombRiding
+//'http://i.imgur.com/0tAhdzx.jpg'      --close shot
+//'http://i.imgur.com/9etWRiY.jpg'      --distant shot
 
 //load & place trump
 //load explosions
 PIXI.loader.add([   //only one loader function allowed
-    'http://i.imgur.com/MbjpZIK.png', 'http://i.imgur.com/6msh6C3.png', 'http://i.imgur.com/iaJheYx.png', 'http://i.imgur.com/zYWTVSo.png', 'http://i.imgur.com/XyGIMu1.png', 
+  'http://i.imgur.com/B6853Id.png', 'http://i.imgur.com/0tAhdzx.jpg', 'http://i.imgur.com/Ah0bauM.png', 'http://i.imgur.com/MbjpZIK.png', 'http://i.imgur.com/6msh6C3.png', 'http://i.imgur.com/iaJheYx.png', 'http://i.imgur.com/zYWTVSo.png', 'http://i.imgur.com/XyGIMu1.png', 
 ]).load(loadFinished); 
 //this loads the image as webgl ready texture to >>PIXI.utils.TextureCache[nameOfFile]<<
 
 function loadFinished(){
     console.log('pic loaded');
+
+    //twitter eagle
+    eagle = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/B6853Id.png'].texture);
+    eagle.anchor.set(0.5, 0.5);
+    eagle.scale.set(0.8, 0.8);
+    eagle.position.set(window.innerWidth/2, window.innerHeight/2-100);
+
+    commanderTxt = new PIXI.Text('COMMANDER-IN-TWEET', {fontFamily: "Kumar One"  , fontSize: 48, fontWeight : 'bold',fill: '#FFFFFF', dropShadow : true,
+            dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6 });
+    commanderTxt.anchor.set(0.5, 0.5);
+    commanderTxt.position.set(window.innerWidth/2, window.innerHeight/2+180);
+
+
+    //major kong
+    majorKong = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/0tAhdzx.jpg'].texture);
+    majorKong.anchor.set(0.5, 0.5);
+    majorKong.scale.set(1.2, 1.2);
+    majorKong.position.set(window.innerWidth/2, window.innerHeight/2);
+    
+
     trump = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/MbjpZIK.png'].texture);
     trump.anchor.set(0.5, 1);
     trump.scale.set(0.5, 0.5);
     trump.position.set(window.innerWidth/2, window.innerHeight);
     stage.addChild(trump);
+
+    
+
+    background.addChild(eagle);
+    background.addChild(commanderTxt);
+
+    background.addChild(majorKong);
+    background.addChild(trump);
+    trump.visible = false;
+    majorKong.visible = false;
 
     //the sprite is created when needed
     /*tweetTexture = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/6msh6C3.png'].texture);
@@ -54,7 +110,7 @@ socket.on('stream', function(tweet){
 
     count += 1; 
  
-    if(count %2 == 0 && frameCount > timeBeforeStart && allObj.children.length < maxTweets){  //make sure text is only printed once
+    if(count %2 == 0 && frameCount > timerScreen2 && allObj.children.length < maxTweets){  //make sure text is only printed once, and not more than the maxTweets are shown
 
         //1 obj represents: text, user, tweetTexture
         var obj = new PIXI.Container();
@@ -158,7 +214,7 @@ socket.on('stream', function(tweet){
             console.log('object removed');
             explode(x, y);  //call explosion function and place it at the last click on an interactive sprite
             score++;
-            scoreText.text = 'Your score is:\n' + score + ' points'
+            scorePtText.text = score + ' points'
 
             //check for ever n display an award message
             if(score %5 == 0){
@@ -193,6 +249,8 @@ function getRandomInt(min, max) {
 
 //WORKAROUND because I had troubles with PIXI.MovieClie or PIXI.animatedSprite for making sprite sheet animations 
 function explode(x, y){
+new Howl({src: ['/explosion.mp3'], volume: 0.3}).play();
+
     exp1 = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/iaJheYx.png'].texture);
      exp1.anchor.set(0.5, 0.7);
      exp1.position.set(x, y);
@@ -226,19 +284,15 @@ function explode(x, y){
 
 //variable Text on screen
 var style = {
-    fontFamily : 'Arial',
-    fontSize : '48px',
-    fontStyle : 'italic',
-    fontWeight : 'bold',
-    fill : '#F7EDCA',
-    stroke : '#4a1850',
-    strokeThickness : 5,
+    fontFamily : fontInstr,
+    fontSize : '36px',
+    fill : '#FFFFFF',
     dropShadow : true,
     dropShadowColor : '#000000',
     dropShadowAngle : Math.PI / 6,
     dropShadowDistance : 6,
     wordWrap : true,
-    wordWrapWidth : 1000
+    wordWrapWidth : 1500
 };
 
 //initial text        
@@ -246,34 +300,71 @@ var gameText = new PIXI.Text('Play the most overrated game on the web!', style);
         gameText.anchor.set(0.5, 0.5);
         gameText.position.set(window.innerWidth/2, window.innerHeight/2-250);
 
-var hashtag = new PIXI.Text('#NotMyPresident', {fontFamily: "Arial", fontSize: 48, fontStyle : 'italic', fontWeight : 'bold',fill: '#FF0000'});
+var hashtag = new PIXI.Text('#NotMyPresident', {fontFamily: fontInstr, fontSize: 36, fontStyle : 'italic', fontWeight : 'bold',fill: '#FF0000'});
         hashtag.anchor.set(0.5, 0.5);
-        hashtag.position.set(window.innerWidth/2, window.innerHeight/2-150);
+        hashtag.position.set(window.innerWidth/2, window.innerHeight/2-130);
 
-var instructions = new PIXI.Text('Click on the incoming tweets to gain points!', {fontFamily: "Arial", fontSize: 36, fontWeight : 'bold',fill: '#F7EDCA', stroke : '#4a1850', strokeThickness : 2, dropShadow : true,
+var instr = new PIXI.Text('Click on the incoming tweets to gain points!', {fontFamily: fontInstr, fontSize: 24, fill: '#00ACED' ,dropShadow : false,
             dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6});
-        instructions.anchor.set(0.5, 0.5);
-        instructions.position.set(window.innerWidth/2, window.innerHeight/2);
+        instr.anchor.set(0.5, 0.5);
+        instr.position.set(window.innerWidth/2, window.innerHeight/2);
 
-    stage.addChild(gameText);
-    stage.addChild(hashtag);
+var bgIncomingTw = new PIXI.Graphics();
+    bgIncomingTw.beginFill(0xFFFFFF);
+    bgIncomingTw.drawRoundedRect(200, instr.position.y-25, 1125, 45, 10); // drawRoundedRect(x, y, width, height, radius)
+    bgIncomingTw.endFill();
+
+    
+
+    instructions.addChild(bgIncomingTw);
+    instructions.addChild(gameText);
+    instructions.addChild(hashtag);
+    instructions.addChild(instr);
+
+    instructions.visible = false;
+   
+
+    //tricky with displaying order text in front of pics
+    stage.addChild(background);
     stage.addChild(instructions);
+    
 
 //score:
-var scoremsg = 'Your score is:\n' + score + ' points';
-var scoreText = new PIXI.Text(scoremsg, {fontFamily: "Arial", fontSize: 30, fontStyle : 'italic', fontWeight : 'bold', fill: '#FF0000', 
-    stroke : '#4a1850',strokeThickness : 3,dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6});
+var scoremsg = 'SCORE:';
+var scoreText = new PIXI.Text(scoremsg, {fontFamily: fontInstr, fontSize: 24, fill: '#FFFFFF', 
+    dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6});
         //scoreText.anchor.set(0.5, 0.5);
         scoreText.position.set(150, window.innerHeight-150);
     
     stage.addChild(scoreText);
 
+var scorePt = score + ' points';
+var scorePtText = new PIXI.Text(scorePt, {fontFamily: 'Press Start 2P', fontSize: 18, fill: '#FFFFFF', 
+    dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6});
+        //scoreText.anchor.set(0.5, 0.5);
+        scorePtText.position.set(150, window.innerHeight-100);
+
+var rdRect = new PIXI.Graphics();
+    rdRect.beginFill(0x00ACED);
+    rdRect.drawRoundedRect(scorePtText.position.x-20, scorePtText.position.y-15, 190, 45, 10); // drawRoundedRect(x, y, width, height, radius)
+    rdRect.endFill();
+    
+    stage.addChild(rdRect);
+    stage.addChild(scorePtText);
+
+scoreText.visible = false;
+scorePtText.visible = false;
+rdRect.visible = false;
+
+    
+
+
 //award words 7items
 var awards = ["You have such great potential. But you are just sitting around and having a good time. So sad!", "you're highly overrated!",
-  "Hmmm, not so bad. You want to be in my cabinet?", "Bigly!!!", "Amazing!", "Tremendous!"]
+  "Hmmm, not so bad. You want to be in my cabinet?", "BIGLY !!!", "AMAZING!", "TREMENDOUS!"]
 
-var awardText = new PIXI.Text('', {fontFamily: "Arial", fontSize: 30, fontStyle : 'italic', fontWeight : 'bold', fill: '#FF0000', 
-    stroke : '#4a1850',strokeThickness : 3,dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 6,
+var awardText = new PIXI.Text('', {fontFamily: "Arial", fontSize: 36, fontStyle : 'italic', fontWeight : 'bold', fill: '#00ACED' 
+    /*, stroke : '#000000',strokeThickness : 1*/ ,dropShadow : true, dropShadowColor : '#000000', dropShadowAngle : Math.PI / 6, dropShadowDistance : 4,
     wordWrap : true, wordWrapWidth : 500});
         //scoreText.anchor.set(0.5, 0.5);
         awardText.position.set(window.innerWidth/2+170, window.innerHeight-200);        //trump.x +trump.width, trump.y -trump.height); -> i think trump is at this point undefined
@@ -293,11 +384,25 @@ console.log('loop started');
 function gameLoop(){
     requestAnimationFrame(gameLoop);
 
-    if(frameCount>500){
-        gameText.visible = false;
-        hashtag.visible = false;
+   if(frameCount>timerScreen1){
+       eagle.visible = false;
+       commanderTxt.visible = false;
+
+       trump.visible = true;
+      
+       instructions.visible = true;
+   }
+
+    if(frameCount>timerScreen2){
+        
         instructions.visible = false;
+
+        scoreText.visible = true;
+        scorePtText.visible = true;
+        rdRect.visible = true;
+        majorKong.visible = true;
     }
+
     frameCount++;
 
     

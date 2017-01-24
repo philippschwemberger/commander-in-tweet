@@ -27,6 +27,9 @@ app.use(express.static(path.join(__dirname, 'linkedScripts')));   //js file has 
 //app.use(express.static('../commander-in-tweet')); //move up one directory and then the dir the file is in -> main directory
 but then the dir of all files had to be called 'commander-in-tweet' on each users computer*/
 
+//serve music files
+app.use(express.static(__dirname + '/public'));
+
  //define a route handler '/'  - the route handler get's hit when the website home is hit
 app.get('/', function(req, res){    //GET request on homepage
   res.sendFile(__dirname + '/index.html');  //serves the index file to the browser
@@ -44,6 +47,7 @@ io.sockets.on('connection', function (socket) {
 
   stream.on('tweet', function (tweet) {   //tweet in cb-function rep the data {} - coming from the open stream and the filter parmas
     io.sockets.emit('stream',tweet);     //emits data to the client part, 'stream' is the customEventsName, tweet is the data to be sent
+    console.log('tweeted');
   });
 
 
