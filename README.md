@@ -1,16 +1,17 @@
-# commander-in-tweet (Beta release)
+# COMMANDER-IN-TWEET 1.0
 browser game built with node.js and pixi.js using the twitter API
-
+  
+  
 requirements: node.js installed   
-
+  
 if you haven't already, download it here: https://nodejs.org/en/download/  
-  
-  
+    
+    
 How to install:  
   
 1.) clone or download the repository  
   
-2.) unzip and navigate to the downloaded folder (make sure you are in the folder with README.md in it) via the terminal or your favorite CLI: $ cd 'pathOfFolder'  or  > cd 'pathOfFolder'  
+2.) unzip and navigate to the downloaded folder via the terminal or your favorite CLI: $ cd 'pathOfFolder'  or  > cd 'pathOfFolder' (make sure you are in the folder with README.md in it)    
   
 3.) $ npm install  (this installs the packages in the "dependencies" of package.json)  
   
