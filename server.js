@@ -14,7 +14,7 @@ server.listen(8080);                    //HTTP server listens on port 8080
 
 //twitter setup
 var Twit = require('twit');
-var keys = require('./keys');                               // import from keys.js file
+var keys = require('./yourKeys');                               // import from yourKeys.js file
 var searchFor = require('./config').search_param;           //defined in object config.js
 var language = require('./config').language_param;          //defined in object config.js
 
