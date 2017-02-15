@@ -67,7 +67,7 @@ var awardCount = 0;
 
 //load all pictures
 PIXI.loader.add([   //only one loader function allowed
-  'http://i.imgur.com/B6853Id.png', 'http://i.imgur.com/0tAhdzx.jpg', 'http://i.imgur.com/Ah0bauM.png', 'http://i.imgur.com/MbjpZIK.png', 'http://i.imgur.com/6msh6C3.png', 'http://i.imgur.com/iaJheYx.png', 'http://i.imgur.com/zYWTVSo.png', 'http://i.imgur.com/XyGIMu1.png', 
+  'http://i.imgur.com/B6853Id.png', 'http://i.imgur.com/tUFWnMU.jpg', 'http://i.imgur.com/Ah0bauM.png', 'http://i.imgur.com/567woI1.png', 'http://i.imgur.com/6msh6C3.png', 'http://i.imgur.com/iaJheYx.png', 'http://i.imgur.com/zYWTVSo.png', 'http://i.imgur.com/XyGIMu1.png', 
 ]).load(loadFinished); //sprites are created in loadFinished-function   -> everything on 1st screen
 //this loads the image as webgl ready texture to >>PIXI.utils.TextureCache[nameOfFile]<<
 
@@ -349,7 +349,7 @@ function loadFinished(){
     credits.position.set(window.innerWidth/2, window.innerHeight - screenHeightHalf/8);
 
     //2nd screen
-    trump = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/MbjpZIK.png'].texture);
+    trump = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/567woI1.png'].texture);
     trump.anchor.set(0.5, 1);
     var calcHelp = 362*screenHeight/736;    //362px trump.width at fullscreen , 736 screenHeight bei 1080px
     trump.scale.set(calcHelp/trump.width, calcHelp/trump.width);
@@ -357,7 +357,7 @@ function loadFinished(){
     stage.addChild(trump);
 
     //3rd screen
-    majorKong = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/0tAhdzx.jpg'].texture);
+    majorKong = new PIXI.Sprite(PIXI.loader.resources['http://i.imgur.com/tUFWnMU.jpg'].texture);
     majorKong.anchor.set(0.5, 0.5);
     majorKong.scale.set(screenWidth/majorKong.width, screenWidth/majorKong.width);
     majorKong.position.set(window.innerWidth/2, window.innerHeight/2);
