@@ -9,8 +9,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "socket.io": "*",
-    "express": "*",
-    "twit": "^2.2.5"
+    "socket.io": "1.7.2",
+    "express": "4.14.0",
+    "twit": "2.2.5"
   }
 }
