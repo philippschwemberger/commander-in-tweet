@@ -10,22 +10,25 @@ var http = require('http');
 var server = http.createServer(app);    //supply the function handler to an HTTP server 
 var io = require('socket.io').listen(server);
 
-server.listen(8080);                    //HTTP server listens on port 8080
+var portNr = require('./config/listenAtPort').port;
+server.listen(portNr);                    //HTTP server listens on port defined in config folder, set to 8080
 
 //twitter setup
 var Twit = require('twit');
-var keys = require('./yourKeys');                               // import from yourKeys.js file
-var searchFor = require('./config').search_param;           //defined in object config.js
-var language = require('./config').language_param;          //defined in object config.js
+var keys = require('./config/yourKeys');                               // import from yourKeys.js file
+var searchFor = require('./config/searchParams').search_param;           //defined in object config.js
+var language = require('./config/searchParams').language_param;          //defined in object config.js
 
 var T = new Twit(keys);
 
-//handing the dir of the linked js files to the browser
-var path = require('path');
-app.use(express.static(path.join(__dirname, 'linkedScripts')));   //js file has to be in dir: 'linkedScripts'
-/*if I don't want to have my .js file in another dir I could use this, 
-//app.use(express.static('../commander-in-tweet')); //move up one directory and then the dir the file is in -> main directory
-but then the dir of all files had to be called 'commander-in-tweet' on each users computer*/
+//handing the dir of main.js files to the browser
+
+//var path = require('path');
+//app.use(express.static(path.join(__dirname, 'linkedScripts')));   //js file has to be in dir: 'linkedScripts'
+
+//if I don't want to have my .js file in another dir I could use this, 
+app.use(express.static('../commander-in-tweet')); //move up one directory and then the dir the file is in -> main directory
+//but then the dir of all files had to be called 'commander-in-tweet' on each users computer
 
 //serve music files
 app.use(express.static(__dirname + '/public'));
